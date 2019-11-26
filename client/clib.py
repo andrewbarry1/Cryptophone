@@ -21,7 +21,7 @@ def first_run(user_pw):
     msg_salt = base64.b64encode(nacl.utils.random(64)).decode('utf-8')
     init_Crypto.write_enc('contacts.txt', '{"contacts":{},"salt":"' + msg_salt + '"}')
 
-    phone_number = network.register_key(dev_id, init_Crypto.privkey.public_key)
+    phone_number = network.register_key(dev_id, pubkey)
     init_Crypto.write_enc('identity.txt', phone_number)
     return str(phone_number)
 

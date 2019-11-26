@@ -49,7 +49,6 @@ def get_msgs(cur, to_id, from_id):
     if from_id is None or to_id is None: # invalid phone numbers, fake no messages
         return '[]'
     cur.execute('SELECT timestamp, msg FROM messages WHERE ifrom = %s AND ito = %s', (from_id, to_id))
-    cur.execute('DELETE FROM messages WHERE ifrom = %s AND ito = %s', (from_id, to_id))
     msgs = []
     try:
         all = cur.fetchall()
@@ -59,6 +58,7 @@ def get_msgs(cur, to_id, from_id):
         return msgs
     for (ts, msg) in all:
         msgs.append([int(ts.timestamp()), msg])
+        cur.execute('DELETE FROM messages WHERE ifrom = %s AND ito = %s', (from_id, to_id))
     return json.dumps(msgs)
 
 

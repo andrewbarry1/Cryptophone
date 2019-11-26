@@ -2,7 +2,7 @@ import nacl.utils
 import nacl.pwhash
 import getpass, os, json, base64, time
 import clib # All general Cryptophone functionality (UI-independent)
-from crypto import CryptoBox
+from crypto import CryptoBox, check_pw
 
 
 # TODO this is probably very bad for security (ljust)
@@ -20,7 +20,7 @@ def first_run():
     print('====== FIRST RUN ======')
     user_pw = prompt_pass(verify=True)
     clib.first_run(user_pw)
-    phone_number = clib.first_run()
+    phone_number = clib.first_run(user_pw)
     print('====== YOU ARE ' + phone_number + ' ======')
     print('====== STARTUP COMPLETE ======')
 
@@ -53,7 +53,7 @@ def input_loop():
 
             all_msgs_dec = clib.get_threaded_conversation(Crypto, dev_id, pn, from_u)
             if all_msgs_dec is None or len(all_msgs_dec) == 0:
-                print('No messages from that number.')
+                print('No messages from them.')
             else:
                 for msg in all_msgs_dec:
                     ts_format = time.strftime('%d/%m/%y %I:%M%p', time.gmtime(int(msg[0])))

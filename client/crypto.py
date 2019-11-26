@@ -2,6 +2,18 @@ import json
 import nacl.public, nacl.secret, nacl.pwhash
 from base64 import b64decode
 
+
+def check_pw(user_pw):
+    hash_f = open('pw.txt', 'rb')
+    hash = hash_f.read()
+    hash_f.close()
+    try:
+        nacl.pwhash.verify(hash, user_pw)
+        return True
+    except:
+        return False
+    
+
 # Read/Write encrypted data to filesystem, maintain asymmetric keys
 class CryptoBox:
 
@@ -18,12 +30,14 @@ class CryptoBox:
             akey_f.close()
         
         return CryptoBox(user_pw, load_privkey=False), privkey.public_key
-        
+
     
     def __init__(self, usr_pw, load_privkey=True):
         self.skbox = nacl.secret.SecretBox(usr_pw)
         if load_privkey:
             self.privkey = nacl.public.PrivateKey(self.decrypt_local('akey.txt', astext=False))
+        else:
+            self.privkey = None
 
     def decrypt_local(self, path, astext=True):
         f = open(path, 'rb')

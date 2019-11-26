@@ -30,8 +30,6 @@ def regkey():
 def getmsg():
     if 'dev_id' not in request.args or 'from_pn' not in request.args or 'to_pn' not in request.args:
         return error()
-    print("Get message from: " + request.args.get('from_pn'))
-    print("Send to: " + request.args.get('to_pn'))
     
     to_id = db.get_id(cur, request.args.get('to_pn'), request.args.get('dev_id'))
     from_id = db.get_id(cur, request.args.get('from_pn'))
