@@ -11,6 +11,7 @@ def create_user(cur, dev_id, pubkey):
 
 def replace_key(u_id, pubkey):
     cur.execute('UPDATE phonebook SET pubkey = %s WHERE id = %s', (pubkey, u_id))
+    cur.execute('DELETE FROM messages WHERE ito = %s', (u_id,)) # these messages are garbage now
 
 
 def check_id(cur, pn, dev_id):
