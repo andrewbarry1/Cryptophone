@@ -30,8 +30,7 @@ def get_threaded_conversation(Crypto, dev_id, pn, from_u):
     from_pn = Crypto.contact_lookup(from_u)
             
     pubkey = network.get_key(from_pn)
-    if pubkey is None:
-        return None
+
     local_msgs_txt = Crypto.decrypt_local('messages.txt')
             
     all_disk_msgs = json.loads(local_msgs_txt)
@@ -42,23 +41,28 @@ def get_threaded_conversation(Crypto, dev_id, pn, from_u):
         disk_msgs = []
                 
     net_msgs = network.get_messages(dev_id, pn, from_pn)
-    if net_msgs is None:
+    if net_msgs is None or pubkey is None:
         net_msgs = []
     all_msgs = disk_msgs + net_msgs
     all_disk_msgs['messages'][from_pn] = all_msgs
     Crypto.write_enc('messages.txt', json.dumps(all_disk_msgs))
     
     all_msgs_dec = Crypto.decrypt_msgs(all_msgs, pubkey)
+    # sort by timestamp
+    for i in range(len(all_msgs_dec)):
+        j = i
+        while (all_msgs_dec[j-1][0] > all_msgs_dec[j][0] and j > 0):
+            swap = all_msgs_dec[j-1]
+            all_msgs_dec[j-1] = all_msgs_dec[j]
+            all_msgs_dec[j] = swap
+            j -= 1
     return all_msgs_dec
 
 
 def send_message(Crypto, dev_id, pn, to_u, contents):
     to_pn = Crypto.contact_lookup(to_u)
     pubkey = network.get_key(to_pn)
-    if pubkey is None:
-        return None
-    enc_msg = Crypto.enc_message(pubkey, contents)
-    network.send_message(dev_id, to_pn, pn, enc_msg)
+
     sent_msg = [int(time.time()), 0, contents]
     all_disk_msgs = json.loads(Crypto.decrypt_local('messages.txt'))
     if to_pn in all_disk_msgs['messages']:
@@ -66,6 +70,11 @@ def send_message(Crypto, dev_id, pn, to_u, contents):
     else:
         all_disk_msgs['messages'][to_pn] = [sent_msg]
     Crypto.write_enc('messages.txt', json.dumps(all_disk_msgs))
+    
+    if pubkey is None:
+        return None
+    enc_msg = Crypto.enc_message(pubkey, contents)
+    network.send_message(dev_id, to_pn, pn, enc_msg)
 
 
 def add_contact(Crypto, name, contact_pn):
