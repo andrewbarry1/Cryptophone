@@ -2,8 +2,11 @@ import nacl.utils
 import nacl.pwhash
 import getpass, os, json, base64, time
 import network # network protocol lives here
-from crypto import CryptoBox # most crypto functions live here
+from crypto import CryptoBox, check_pw # most crypto functions live here
 
+
+def needs_first_run():
+    return not(os.path.isfile('id.txt'))
 
 def first_run(user_pw):
     pw_hash = nacl.pwhash.str(user_pw)
@@ -24,6 +27,12 @@ def first_run(user_pw):
     phone_number = network.register_key(dev_id, pubkey)
     init_Crypto.write_enc('identity.txt', phone_number)
     return str(phone_number)
+
+
+def check_password(pw):
+    return check_pw(prep_pass(pw))
+def prep_pass(pw):
+    return pw.strip().ljust(32).encode('utf-8')
 
 
 def get_threaded_conversation(Crypto, dev_id, pn, from_u):
@@ -114,3 +123,25 @@ def regen_keys(Crypto, pn, dev_id):
     # messages are now garbage, wipe them
     msg_salt = base64.b64encode(nacl.utils.random(64)).decode('utf-8')
     Crypto.write_enc('messages.txt', '{"messages":{},"salt":"' + msg_salt + '"}')
+
+
+
+def gen_crypto(pw):
+    Crypto = CryptoBox(pw)
+    dev_id = Crypto.decrypt_local('id.txt')
+    pn = Crypto.decrypt_local('identity.txt')
+    return CryptoContainer(Crypto, dev_id, pn)
+
+
+def get_conversation_list(Crypto):
+    all_disk_msgs = json.loads(Crypto.decrypt_local('messages.txt'))
+    keys = [k for k in all_disk_msgs['messages']]
+    return keys
+
+
+
+class CryptoContainer:
+    def __init__(self, Crypto, dev_id, pn):
+        self.Crypto = Crypto
+        self.dev_id = dev_id
+        self.pn = pn

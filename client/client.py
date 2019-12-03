@@ -7,14 +7,14 @@ from crypto import CryptoBox, check_pw
 
 # TODO this is probably very bad for security (ljust)
 def prompt_pass(verify=False):
-    pw = getpass.getpass().ljust(32).encode('utf-8')
+    pw = getpass.getpass()
     if verify:
         print('Enter password again')
-        user_pw_check = prompt_pass(False)
+        user_pw_check = getpass.getpass()
         if not (pw == user_pw_check):
             raise Exception('Passwords do not match.')
-        return user_pw_check
-    return pw
+        return clib.prep_pass(user_pw_check)
+    return clib.prep_pass(pw)
 
 def first_run():
     print('====== FIRST RUN ======')
@@ -26,7 +26,7 @@ def first_run():
 
 
 def input_loop():
-    if not os.path.isfile('id.txt'):
+    if clib.needs_first_run():
         first_run()
     try:
         chk_pw = prompt_pass()

@@ -88,3 +88,11 @@ class CryptoBox:
         if name in contacts:
             return contacts[name]
         return name
+
+
+    def contact_reverse_lookup(self, pn):
+        contacts = self.load_contacts()
+        for name in contacts:
+            if contacts[name] == pn:
+                return name
+        return pn
