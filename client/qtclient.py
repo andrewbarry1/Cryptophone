@@ -195,11 +195,10 @@ class ConversationScreen:
         convo = ''
         for msg in self.messages:
             ts_format = time.strftime('%d/%m/%y %I:%M%p', time.gmtime(int(msg[0])))
-            convo += ts_format
             if msg[1] == 0:
-                convo += ' (You)'
-            convo += '\n' + msg[2] + '\n\n'
-        convo = convo[:-2]
+                convo += '<p style="text-align:right">' + ts_format + '<br/>' + msg[2] + '<br/></p>'
+            else:
+                convo += '<p>' + ts_format + '<br/>' + msg[2] + '<br/></p>'
         self.te.setText(convo)
         self.te.setReadOnly(True)
         self.te.moveCursor(QTextCursor.End)
